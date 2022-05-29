@@ -3,6 +3,7 @@
   hosts: clickhouse
 
   handlers:
+
     - name: Start clickhouse service
       become: true
       ansible.builtin.service:
@@ -14,12 +15,12 @@
 
     - name: Install GPG-key for Clickhouse
       become: true
-      rpm_key:
+      ansible.builtin.rpm_key:
         state: present
         key: https://repo.clickhouse.com/CLICKHOUSE-KEY.GPG
 
     - name: Check if Clickhouse repo already exists
-      stat:
+      ansible.builtin.stat:
         path: /etc/yum.repos.d/clickhouse.repo
       register: clickrepo
 
@@ -53,14 +54,30 @@
 
 - name: Install Vector
   hosts: clickhouse
+
   handlers:
+
     - name: Start vector service
       become: true
       ansible.builtin.service:
         name: vector
-        state: restarted
+        state: started
+        enabled: yes
+
+# Образчик редкостного бардака в репозитории vector`а:
+# Все билды всех разновидностей для всех архитектур
+# лежат в одном каталоге без какой-либо сортировки.
+# Было бы на моих серверах - тупо выкачал бы нужный
+# пакет и создал бы локальную репу.
+# P.S. И, да, GPG-ключи тоже не найдены
+
   tasks:
-    - block:
-        - name: Debug
-          debug:
-            msg: "Ы!"
+
+    - name: Install RPMs from Vector site
+      become: true
+      ansible.builtin.dnf:
+        name: "https://packages.timber.io/vector/{{ vector_version }}/{{ item }}-{{ vector_version }}-{{ vector_rpm_build }}.{{ vector_arch }}.rpm"
+        state: present
+        disable_gpg_check: true
+      with_items: "{{ vector_packages }}"
+      notify: Start vector service

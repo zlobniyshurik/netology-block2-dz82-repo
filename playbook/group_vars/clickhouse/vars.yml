@@ -4,3 +4,13 @@ clickhouse_packages:
   - clickhouse-client
   - clickhouse-server
   - clickhouse-common-static
+# Образчик редкостного бардака в репозитории vector`а:
+# Все билды всех разновидностей для всех архитектур
+# лежат в одном месте.
+# Было бы на моих серверах - тупо выкачал бы нужный
+# пакет и создал бы локальную репу.
+vector_version: "0.21.2"
+vector_rpm_build: "1"
+vector_packages:
+  - vector
+vector_arch: "x86_64"
